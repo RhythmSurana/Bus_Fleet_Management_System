@@ -7,7 +7,8 @@ from functools import wraps
 
 # Update the Flask app initialization to serve from parent directory
 app = Flask(__name__, static_folder='..', static_url_path='')
-CORS(app)
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}})  # allow all frontends
 
 app.config["JWT_SECRET_KEY"] = "super-secret-key"  
 jwt = JWTManager(app)
@@ -150,10 +151,34 @@ def chat(route):
 @require_role("authority")
 def get_all_vehicles():
     return jsonify([
-        {"id": "BUS101", "type": "driver", "location": {"lat": 22.7196, "lng": 75.8577}, "status": "Active", "route": "R102"},
-        {"id": "BUS102", "type": "driver", "location": {"lat": 22.7276, "lng": 75.8723}, "status": "Active", "route": "R101"},
-        {"id": "BUS103", "type": "driver", "location": {"lat": 22.7120, "lng": 75.8400}, "status": "Maintenance", "route": "R103"},
-        {"id": "PASS101", "type": "passenger", "location": {"lat": 22.7120, "lng": 75.8400}, "status": "Waiting", "route": "R102"}
+        {
+            "id": "BUS101",
+            "type": "driver",
+            "location": {"lat": 22.7196, "lng": 75.8577},
+            "status": "Active",
+            "route": "R102"
+        },
+        {
+            "id": "BUS102",
+            "type": "driver",
+            "location": {"lat": 22.7276, "lng": 75.8723},
+            "status": "Active",
+            "route": "R101"
+        },
+        {
+            "id": "BUS103",
+            "type": "driver",
+            "location": {"lat": 22.7120, "lng": 75.8400},
+            "status": "Maintenance",
+            "route": "R103"
+        },
+        {
+            "id": "PASS101",
+            "type": "passenger",
+            "location": {"lat": 22.7100, "lng": 75.8420},
+            "status": "Waiting",
+            "route": "R102"
+        }
     ])
 
 @app.route("/api/authority/analytics", methods=["GET"])
@@ -167,6 +192,16 @@ def get_authority_analytics():
         "buses_in_maintenance": 3,
         "average_delay_time": "5 mins"
     })
+
+@app.route("/api/authority/complaints", methods=["GET"])
+@require_role("authority")
+def get_complaints():
+    return jsonify([
+        {"id": "C1", "issue": "Pothole", "priority": "high", "location": {"lat": 22.7196, "lng": 75.8577}},
+        {"id": "C2", "issue": "Traffic light malfunction", "priority": "medium", "location": {"lat": 22.7300, "lng": 75.8800}},
+        {"id": "C3", "issue": "Broken signboard", "priority": "low", "location": {"lat": 22.7120, "lng": 75.8400}},
+    ])
+
 
 @app.route("/api/monitor", methods=["GET"])
 @require_role("authority")
